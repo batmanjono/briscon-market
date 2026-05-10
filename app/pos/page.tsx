@@ -65,7 +65,7 @@ export default function POS() {
     if (cart.length === 0) return;
 
     const totalDollars = (total / 100).toFixed(2);
-    alert(`✅ SALE COMPLETE!\n\nTotal: $${totalDollars}\n\nPlease charge on Square now.`);
+    alert(`✅ SALE COMPLETE!\n\nTotal: $${totalDollars}\n\nPlease charge $${totalDollars} on Square now.`);
 
     setCart([]);
     setTotal(0);
