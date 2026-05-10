@@ -2,12 +2,16 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-const CASHIER_PASSWORD = "briscon2026";
+// Force dynamic rendering (important for Vercel)
+export const dynamic = 'force-dynamic';
+
+const CASHIER_PASSWORD = "briscon2026";   // ← Change this before the event
 
 export default function POS() {
   const searchParams = useSearchParams();
   const [cart, setCart] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [enteredPassword, setEnteredPassword] = useState('');
   const [manualInput, setManualInput] = useState('');
@@ -32,14 +36,14 @@ export default function POS() {
       setTotal(prev => prev + foundItem.price);
       setManualInput('');
       setMessage(`Added: ${foundItem.title}`);
-      setTimeout(() => setMessage(''), 2000);
+      setTimeout(() => setMessage(''), 1500);
     } else {
       setMessage(`❌ Item not found: ${itemId}`);
-      setTimeout(() => setMessage(''), 3000);
+      setTimeout(() => setMessage(''), 2500);
     }
   };
 
-  // Auto add from QR code link
+  // Auto-add from QR code link
   useEffect(() => {
     const itemId = searchParams.get('item');
     if (itemId) addItemToCart(itemId);
@@ -65,7 +69,8 @@ export default function POS() {
     if (cart.length === 0) return;
 
     const totalDollars = (total / 100).toFixed(2);
-    alert(`✅ SALE COMPLETE!\n\nTotal: $${totalDollars}\n\nPlease charge $${totalDollars} on Square now.`);
+    
+    alert(`✅ SALE COMPLETE!\n\nTotal to Charge: $${totalDollars}\n\nPlease process $${totalDollars} on the Square reader now.`);
 
     setCart([]);
     setTotal(0);
@@ -85,7 +90,10 @@ export default function POS() {
             className="w-full p-5 rounded-2xl bg-zinc-800 text-center text-xl mb-6"
             onKeyDown={(e) => e.key === 'Enter' && loginCashier()}
           />
-          <button onClick={loginCashier} className="w-full bg-emerald-600 py-5 rounded-2xl text-xl font-medium">
+          <button 
+            onClick={loginCashier}
+            className="w-full bg-emerald-600 py-5 rounded-2xl text-xl font-medium"
+          >
             Login to POS
           </button>
         </div>
@@ -93,15 +101,16 @@ export default function POS() {
     );
   }
 
-  // Main POS
+  // Main POS Screen
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-4 pb-32">
       <div className="max-w-xl mx-auto">
         <h1 className="text-3xl font-bold mb-1">Briscon POS</h1>
         <p className="text-emerald-400 mb-8">Cashier Terminal</p>
 
+        {/* Input Area */}
         <div className="bg-zinc-900 p-6 rounded-3xl mb-8">
-          <p className="text-zinc-400 mb-3">Scan QR or Type Product ID</p>
+          <p className="text-zinc-400 mb-3">Scan QR Code or Type Product ID</p>
           <form onSubmit={handleManualSubmit}>
             <input
               type="text"
@@ -112,11 +121,14 @@ export default function POS() {
               autoFocus
             />
           </form>
-          {message && <p className="text-center mt-3 text-lg">{message}</p>}
+          {message && <p className="text-center mt-4 text-lg font-medium">{message}</p>}
         </div>
 
-        <div className="space-y-4 mb-8">
-          {cart.length === 0 && <p className="text-zinc-500 text-center py-12">No items added yet</p>}
+        {/* Cart Items */}
+        <div className="space-y-4 mb-8 min-h-[200px]">
+          {cart.length === 0 && (
+            <p className="text-zinc-500 text-center py-12">No items added yet</p>
+          )}
           {cart.map((item, i) => (
             <div key={i} className="bg-zinc-900 p-5 rounded-2xl flex justify-between items-center">
               <div className="text-lg">{item.title}</div>
@@ -125,6 +137,7 @@ export default function POS() {
           ))}
         </div>
 
+        {/* Running Total + Big Button */}
         {cart.length > 0 && (
           <div className="fixed bottom-0 left-0 right-0 bg-zinc-900 border-t border-zinc-700 p-6">
             <div className="text-center mb-6">
